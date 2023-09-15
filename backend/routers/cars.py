@@ -1,12 +1,15 @@
 from typing import List, Optional, Any
 
-from fastapi import APIRouter, Request, Body, status, HTTPException
-from fastapi.encoders import jsonable_encoder
+from fastapi import APIRouter, Request, Body, status, HTTPException, Depends
 from fastapi.responses import JSONResponse
 
 from models.car_model import CarBase, CarWithId, CarUpdate
+from authentication import AuthHandler
 
 from bson.objectid import ObjectId
+
+# instantiate the Auth Handler
+auth_handler = AuthHandler()
 
 cars_router = APIRouter()
 
@@ -48,10 +51,15 @@ async def show_car(request: Request, id: str) -> CarWithId:
 
 # create new car
 @cars_router.post("/", response_description="Add new car", status_code=201)
-async def create_car(request: Request, car: CarBase = Body(...)) -> CarWithId:
-    car = jsonable_encoder(car)
+async def create_car(
+    request: Request,
+    car: CarBase = Body(...),
+    userId=Depends(auth_handler.auth_wrapper),
+) -> CarWithId:
+    car_dump = car.model_dump()
+    car_dump["owner"] = ObjectId(userId)
 
-    new_car = await request.app.mongodb["cars"].insert_one(car)
+    new_car = await request.app.mongodb["cars"].insert_one(car_dump)
     created_car = await request.app.mongodb["cars"].find_one(
         {"_id": new_car.inserted_id}
     )

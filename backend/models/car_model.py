@@ -16,6 +16,7 @@ class CarBase(BaseModel):
 
     class Config:
         arbitrary_types_allowed = True
+        json_encoders = {ObjectId: str}
 
 
 class CarWithId(CarBase):
@@ -24,3 +25,7 @@ class CarWithId(CarBase):
 
 class CarUpdate(BaseModel):
     price: Optional[int] = None
+
+
+class CarDB(CarBase):
+    owner: ObjectId = Field(None, alias="_id")

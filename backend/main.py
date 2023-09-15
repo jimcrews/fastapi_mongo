@@ -9,6 +9,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 
 from routers.cars import cars_router
 from routers.students import student_router
+from routers.users import user_router
 
 DB_URL = config("DB_URL", cast=str)
 DB_NAME = config("DB_NAME", cast=str)
@@ -42,6 +43,7 @@ async def shutdown_db_client():
 
 app.include_router(cars_router, prefix="/cars", tags=["cars"])
 app.include_router(student_router, prefix="/students", tags=["students"])
+app.include_router(user_router, prefix="/users", tags=["users"])
 
 
 if __name__ == "__main__":
